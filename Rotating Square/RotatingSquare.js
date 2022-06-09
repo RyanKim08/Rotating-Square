@@ -6,7 +6,8 @@ var gl;
 var theta = 0.0;
 var dtheta = 0.1;
 var thetaLoc;
-var speed = 1000;
+var speed = 50;
+var dir = -1;
 var bufferId;
 var vertices;
 
@@ -44,15 +45,21 @@ window.onload = function init() {
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
-    document.getElementById('speedval').onchange =
-        function (event) {
-            dtheta = Number(document.getElementById('speedval').value);
-        }
+    // uniform variable declaration in init()
+    thetaLoc = gl.getUniformLocation(program, "theta");
+    gl.uniform1f(thetaLoc, theta);
 
-    document.getElementById('dirBut').onclick =
+    // slider handler
+    document.getElementById("sliderval").onchange =
         function (event) {
-            dtheta *= -1;
-        }
+            speed = event.target.value;
+        };
+
+    // button handler
+    document.getElementById("buttonval").onclick =
+        function () {
+            dir = -1 * dir;
+        };
 
     render();
 };
@@ -62,16 +69,7 @@ function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    setTimeout(function () {
-        theta += dtheta;
-        vertices[0] = vec2(Math.sin(theta), Math.cos(theta));
-        vertices[1] = vec2(-Math.cos(theta), Math.sin(theta));
-        vertices[2] = vec2(Math.cos(theta), -Math.sin(theta));
-        vertices[3] = vec2(-Math.sin(theta), -Math.cos(theta));
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(vertices));
-        render();
-        //requestAnimFrame(render);
-    }, 100);
+    theta +=  dir * dtheta * (speed/100);
+    gl.uniform1f(thetaLoc, theta);
+    requestAnimFrame(render);
 }
